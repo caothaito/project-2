@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trang Chu</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+    
+<div class="container">
+  <h1>Thông Tin Khách Hàng</h1>
+    
+  <form>
+        
+    <div class="form-group">
+      <label>Name:</label>
+      <input type="text" name="name" id="name" class="form-control" value="" required="">
+    </div>
+    <div class="form-group">
+      <label>Email:</label>
+      <input type="text" name="email" id="email" class="form-control" value="" required="">
+    </div>
+    <button type="submit" onclick="save()" class="btn btn-success save-btn">Save</button>
+  </form>
+  <br/>
+  <table id="noidung" class="table table-bordered data-table">
+    <thead>
+      <th>Name</th>
+      <th>Email</th>
+      <th width="200px">Action</th>
+    </thead>
+    <tbody>
+    
+    </tbody>
+  </table>
+   
+</div>
+
+<script>
+$.ajax({
+  url:"api/page",
+  type:"get"
+}).then(function(data){
+
+  for (let i = 0; i < data.length; i++) {
+    var element = data[i]
+    console.log(element)
+    $(".data-table tbody")
+    .append(`<tr data-name='${element.name}' data-email='${element.email}'>
+      <td>"${element.name}"</td>
+      <td>"${element.email}"</td>
+      <td>
+        <button class='btn btn-info btn-xs btn-edit'>Edit</button>
+        <button class='btn btn-danger btn-xs btn-delete' data-id="${element._id}"  onclick="deletes('${element._id}')">Delete</button>
+        </td>
+        </tr>`);
+     
+  }
+})
+
+
+//save
+function save(){
+    $.ajax({
+    url:"api/create/",
+    type:"POST",
+    dataType:"JSON",
+    data:{
+      name:$(`#name`).val(),
+      email:$(`#email`).val(),
+    }
+  })
+}
+//delete  
+function deletes(id){
+
+  $.ajax({
+    url:"api/delete/" +id,
+    type:"DELETE"
+  }).then(function(data){
+
+  })
+}
+ function update(id,name,email){
+   $.ajax({
+      url:"api/update/" +id,
+      type:"PUT",
+      data:{
+        id,name,email
+      }
+   }).then(function(data){
+     
+   })
+ }
+
+
+</script>
+
+
+
+
+
+<script type="text/javascript">
+    $("form").submit(function(e){
+        e.preventDefault();
+        var name = $("input[name='name']").val();
+        var email = $("input[name='email']").val();
+     
+        $(".data-table tbody").append("<tr data-name='"+name+"' data-email='"+email+"'><td>"+name+"</td><td>"+email+"</td><td><button class='btn btn-info btn-xs btn-edit'>Edit</button><button class='btn btn-danger btn-xs btn-delete'>Delete</button></td></tr>");
+    
+        $("input[name='name']").val('');
+        $("input[name='email']").val('');
+    });
+   
+    $("body").on("click", ".btn-delete", function(){
+        $(this).parents("tr").remove();
+    });
+    
+    $("body").on("click", ".btn-edit", function(){
+        var name = $(this).parents("tr").attr('data-name');
+        var email = $(this).parents("tr").attr('data-email');
+    
+        $(this).parents("tr").find("td:eq(0)").html('<input name="edit_name" value="'+name+'">');
+        $(this).parents("tr").find("td:eq(1)").html('<input name="edit_email" value="'+email+'">'); 
+        $(this).parents("tr").find("td:eq(2)").prepend("<button class='btn btn-info btn-xs btn-update'>Update</button><button class='btn btn-warning btn-xs btn-cancel'>Cancel</button>")
+        $(this).hide();
+    });
+   
+    $("body").on("click", ".btn-cancel", function(){
+        var name = $(this).parents("tr").attr('data-name');
+        var email = $(this).parents("tr").attr('data-email');
+    
+        $(this).parents("tr").find("td:eq(0)").text(name);
+        $(this).parents("tr").find("td:eq(1)").text(email);
+   
+        $(this).parents("tr").find(".btn-edit").show();
+        $(this).parents("tr").find(".btn-update").remove();
+        $(this).parents("tr").find(".btn-cancel").remove();
+    });
+   
+    $("body").on("click", ".btn-update", function(){
+        var name = $(this).parents("tr").find("input[name='edit_name']").val();
+        var email = $(this).parents("tr").find("input[name='edit_email']").val();
+      
+        // parents la thay thang cha trong the
+        // child la lay thang con trong the
+        // attr la phan tu trong the
+        // find la tim kiem phan tu minh muon goi
+        // td:eq(0) trong mot the cha co 2 the hoac nhieu hon eq(stt) theo thu tu
+        // td:eq(1)
+
+       var id =  $(this).parents("tr").find(".btn-delete").attr('data-id')
+      $(this).click(update(id, name,email));
+            // =====================
+        $(this).parents("tr").find("td:eq(0)").text(name);
+        $(this).parents("tr").find("td:eq(1)").text(email);
+     
+        $(this).parents("tr").attr('data-name', name);
+        $(this).parents("tr").attr('data-email', email);
+    
+        $(this).parents("tr").find(".btn-edit").show();
+        $(this).parents("tr").find(".btn-cancel").remove();
+        $(this).parents("tr").find(".btn-update").remove();
+    });  
+
+
+
+
+
+
+
+
+    
+</script>
+     
+</body>
+</html>
